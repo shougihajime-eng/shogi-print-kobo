@@ -6,17 +6,19 @@
 
 ## 📍 進捗（いまここ）
 
-- ✅ 試作 HTML プロトタイプを Next.js 16 (App Router) + TypeScript + Tailwind に移植
-- ✅ 問題ライブラリ・盤面エディタ・4種類のプリント生成・教室設定が動く
-- 🟡 ローカルで動作確認 → GitHub 公開 → Vercel デプロイ までを通す
-- 🔜 AI 出題アシスタント（現在「準備中」表示）の実装
+- ✅ プロトタイプ HTML を Next.js 16 + TypeScript + Tailwind に移植
+- ✅ 4種類のプリント生成・盤面エディタ・問題ライブラリ・教室設定が動く
+- ✅ GitHub 公開 → Vercel 本番デプロイ完了
+- 🔜 ブラウザで実機確認（印刷プレビュー含む）と、AI 出題機能の実装
 
 ---
 
 ## 🌐 本番 URL
 
-- 本番（Vercel）: 未デプロイ（このファイルにあとで追記）
-- GitHub: 未作成（このファイルにあとで追記）
+- **本番（Vercel）**: https://shogi-print-kobo.vercel.app
+- **GitHub**: https://github.com/shougihajime-eng/shogi-print-kobo
+- **Vercel ダッシュボード**: https://vercel.com/shougihajime-3368s-projects/shogi-print-kobo
+- `main` ブランチに push すると Vercel が自動でデプロイする
 
 ---
 
