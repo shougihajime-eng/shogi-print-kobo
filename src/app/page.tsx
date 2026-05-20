@@ -251,8 +251,9 @@ function PrintTsume({
         <br />
         考え方のコツ：① まず玉の逃げ道を確認 ② 自分の駒（盤上＋持駒）で詰ます手を探す
         ③ 王手をかけても逃げられない手を選ぶ。
+        　★ 答えは盤の下の「こたえ」のらんに書いてみよう。
       </div>
-      <div className="pp-grid">
+      <div className={`pp-grid${problems.length >= 5 ? " dense" : ""}`}>
         {problems.map((p, i) => {
           const mochi =
             Object.entries(p.mochigoma.sente)
@@ -267,10 +268,13 @@ function PrintTsume({
                 <span className="label">▲持駒:</span>
                 {mochi}
               </div>
-              <div className="pp-task">▲{p.tesuu}手詰</div>
-              <div className="pp-author">
-                作: {p.author}
-                {p.source ? ` 〈${p.source}〉` : ""}
+              <div className="pp-answer">
+                <div className="pp-answer-label">こたえ</div>
+                <div className="pp-answer-line" />
+                <div className="pp-answer-line" />
+                {p.answer && (
+                  <div className="pp-answer-key">{p.answer}</div>
+                )}
               </div>
             </div>
           );
@@ -833,7 +837,16 @@ export default function Page() {
   const [setTeacher, setSetTeacher] = useState(DEFAULT_SETTINGS.teacher);
   const [toastMsg, setToastMsg] = useState("");
   const [printKind, setPrintKind] = useState<PrintKind>("tsume");
+  const [showAnswers, setShowAnswers] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("show-answers", showAnswers);
+    return () => {
+      document.body.classList.remove("show-answers");
+    };
+  }, [showAnswers]);
 
   /* --- Toast --- */
   const showToast = useCallback((msg: string) => {
@@ -981,8 +994,8 @@ export default function Page() {
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 4) {
-        showToast("1ページに載せられるのは4問までです");
+      if (prev.length >= 6) {
+        showToast("1ページに載せられるのは6問までです");
         return prev;
       }
       return [...prev, id];
@@ -1197,7 +1210,7 @@ export default function Page() {
                     color: "var(--gray)",
                   }}
                 >
-                  選択中: <strong>{selectedIds.length}</strong> / 4問
+                  選択中: <strong>{selectedIds.length}</strong> / 6問
                 </span>
                 <button className="btn sm ghost" onClick={clearSelection}>
                   選択クリア
@@ -1584,64 +1597,179 @@ export default function Page() {
               </div>
             </div>
             <div className="panel">
-              <div className="panel-title">登録済みの問題</div>
-              <div className="problem-list">
-                {problems.length === 0 ? (
-                  <div className="empty-state">
-                    <div className="mark">蔵</div>
-                    <div className="msg">まだ問題が登録されていません</div>
-                    <button
-                      className="btn primary"
-                      onClick={() => setView("editor")}
+              <div className="panel-title">これまでに作った問題</div>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "#555",
+                  lineHeight: 1.7,
+                  marginBottom: 14,
+                  fontFamily: "var(--font-mincho), serif",
+                }}
+              >
+                ここには、これまでに登録された詰将棋の問題がすべて入っています。
+                <br />
+                ここから「詰将棋プリント」の画面に行って、お気に入りの問題を最大6問えらんで、A4のプリントを作れます。
+              </p>
+              {problems.length === 0 ? (
+                <div className="empty-state">
+                  <div className="mark">蔵</div>
+                  <div className="msg">まだ問題が登録されていません</div>
+                  <button
+                    className="btn primary"
+                    onClick={() => setView("editor")}
+                  >
+                    + 最初の問題を作る
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 18,
+                      marginBottom: 18,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {[1, 3, 5].map((t) => {
+                      const cnt = problems.filter((p) => p.tesuu === t).length;
+                      return (
+                        <div
+                          key={t}
+                          style={{
+                            background: "#fff",
+                            border: "1px solid #d9d2c3",
+                            padding: "10px 16px",
+                            minWidth: 110,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: "var(--gray)",
+                              letterSpacing: ".15em",
+                            }}
+                          >
+                            {t}手詰
+                          </div>
+                          <div
+                            style={{
+                              fontFamily: "var(--font-mincho), serif",
+                              fontSize: 24,
+                              fontWeight: 700,
+                              color: cnt > 0 ? "var(--shu)" : "#bbb",
+                            }}
+                          >
+                            {cnt}
+                            <span style={{ fontSize: 12, marginLeft: 4 }}>問</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #d9d2c3",
+                        padding: "10px 16px",
+                        minWidth: 110,
+                      }}
                     >
-                      + 最初の問題を作る
-                    </button>
-                  </div>
-                ) : (
-                  problems.map((p) => (
-                    <div className="problem-card" key={p.id}>
-                      <div className="pc-head">
-                        <span className="pc-no">
-                          No. {p.id.slice(-4).toUpperCase()}
-                        </span>
-                        <span className="pc-tag">
-                          {p.tesuu}手詰 {p.verified ? "✓" : "⚠"}
-                        </span>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color: "var(--gray)",
+                          letterSpacing: ".15em",
+                        }}
+                      >
+                        合計
                       </div>
                       <div
                         style={{
                           fontFamily: "var(--font-mincho), serif",
+                          fontSize: 24,
                           fontWeight: 700,
-                          fontSize: 14,
-                          marginBottom: 4,
                         }}
                       >
-                        {p.title}
-                      </div>
-                      <div className="pc-author">作者: {p.author}</div>
-                      {p.answer && (
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#555",
-                            marginTop: 6,
-                          }}
-                        >
-                          解答: {p.answer}
-                        </div>
-                      )}
-                      <div className="pc-actions">
-                        <button
-                          className="btn sm ghost"
-                          onClick={() => deleteProblem(p.id)}
-                        >
-                          削除
-                        </button>
+                        {problems.length}
+                        <span style={{ fontSize: 12, marginLeft: 4 }}>問</span>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+                  {([1, 3, 5] as const).map((t) => {
+                    const list = problems
+                      .filter((p) => p.tesuu === t)
+                      .slice()
+                      .sort((a, b) => b.createdAt - a.createdAt);
+                    if (list.length === 0) return null;
+                    return (
+                      <div key={t} style={{ marginBottom: 24 }}>
+                        <h3
+                          style={{
+                            fontFamily: "var(--font-mincho), serif",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            letterSpacing: ".1em",
+                            marginBottom: 10,
+                            paddingBottom: 6,
+                            borderBottom: "1px dotted #c5bda9",
+                          }}
+                        >
+                          {t}手詰　<span style={{ fontSize: 11, color: "var(--gray)", fontWeight: 400 }}>（{list.length}問）</span>
+                        </h3>
+                        <div className="problem-list">
+                          {list.map((p) => (
+                            <div className="problem-card" key={p.id}>
+                              <div className="pc-head">
+                                <span className="pc-no">
+                                  No. {p.id.slice(-4).toUpperCase()}
+                                </span>
+                                <span className="pc-tag">
+                                  {p.tesuu}手詰　{p.verified ? "✓検証済" : "⚠未検証"}
+                                </span>
+                              </div>
+                              <div
+                                style={{
+                                  fontFamily: "var(--font-mincho), serif",
+                                  fontWeight: 700,
+                                  fontSize: 14,
+                                  marginBottom: 4,
+                                }}
+                              >
+                                {p.title || "無題"}
+                              </div>
+                              <div className="pc-author">
+                                作者: {p.author}
+                                {p.source ? `　／　${p.source}` : ""}
+                              </div>
+                              {p.answer && (
+                                <div
+                                  style={{
+                                    fontSize: 11,
+                                    color: "#555",
+                                    marginTop: 6,
+                                    fontFamily: "var(--font-mincho), serif",
+                                  }}
+                                >
+                                  こたえ: {p.answer}
+                                </div>
+                              )}
+                              <div className="pc-actions">
+                                <button
+                                  className="btn sm ghost"
+                                  onClick={() => deleteProblem(p.id)}
+                                >
+                                  削除
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </section>
         )}
@@ -1820,6 +1948,14 @@ export default function Page() {
                 </span>
               </div>
               <div className="print-controls-right">
+                {printKind === "tsume" && (
+                  <button
+                    className="btn"
+                    onClick={() => setShowAnswers((v) => !v)}
+                  >
+                    {showAnswers ? "こたえを隠す" : "こたえを表示"}
+                  </button>
+                )}
                 <button className="btn shu" onClick={() => window.print()}>
                   🖨 印刷する
                 </button>

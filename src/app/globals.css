@@ -19,6 +19,10 @@ html, body {
   font-family: var(--font-gothic), 'Zen Kaku Gothic New', sans-serif;
   font-size: 14px;
   line-height: 1.6;
+  /* 印刷時も色（背景・罫線・蘇芳の差し色）を残す */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  color-adjust: exact;
 }
 .mincho { font-family: var(--font-mincho), 'Shippori Mincho', serif; }
 
@@ -124,9 +128,29 @@ html, body {
 
 .ph-intro { font-family: var(--font-mincho), 'Shippori Mincho', serif; font-size: 12px; color: #333; margin-bottom: 14px; letter-spacing: .05em; line-height: 1.7; }
 
-/* Print problem grid (2x2) */
+/* Print problem grid (default 2x2, dense=2x3 for 5-6 problems) */
 .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm 8mm; margin-bottom: 8mm; }
+.pp-grid.dense { gap: 5mm 6mm; }
 .pp-item { border: 1px solid #222; padding: 6mm 5mm 4mm; position: relative; page-break-inside: avoid; }
+.pp-grid.dense .pp-item { padding: 4mm 3.5mm 3mm; }
+.pp-grid.dense .mini-grid { grid-template-columns: repeat(9, 5.6mm); grid-template-rows: repeat(9, 5.6mm); }
+.pp-grid.dense .mini-cell .mp { width: 5mm; height: 5mm; font-size: 8px; }
+.pp-grid.dense .mini-cols { grid-template-columns: repeat(9, 5.6mm); font-size: 6.5px; }
+.pp-grid.dense .mini-rows { grid-template-rows: repeat(9, 5.6mm); font-size: 6.5px; }
+.pp-grid.dense .pp-num { font-size: 11.5px; }
+.pp-grid.dense .pp-tag { font-size: 8px; }
+.pp-grid.dense .pp-mochigoma { font-size: 8.5px; margin-top: 1.5mm; }
+.pp-grid.dense .pp-task { font-size: 10px; margin-top: 1.5mm; }
+
+/* Answer column (回答欄) — child can write here */
+.pp-answer { margin-top: 2.5mm; padding-top: 1.5mm; border-top: 1px dotted #aaa; }
+.pp-answer-label { font-family: var(--font-mincho), 'Shippori Mincho', serif; font-size: 8.5px; color: #888; letter-spacing: .15em; margin-bottom: 1mm; }
+.pp-answer-line { height: 5mm; border-bottom: .6px solid #b8b8b8; margin-bottom: .8mm; }
+.pp-grid.dense .pp-answer { margin-top: 1.8mm; padding-top: 1mm; }
+.pp-grid.dense .pp-answer-label { font-size: 8px; margin-bottom: .6mm; }
+.pp-grid.dense .pp-answer-line { height: 4mm; margin-bottom: .5mm; }
+.pp-answer-key { font-family: var(--font-mincho), 'Shippori Mincho', serif; font-size: 10.5px; color: var(--shu); text-align: center; margin-top: 1.2mm; font-weight: 700; letter-spacing: .05em; display: none; }
+body.show-answers .pp-answer-key { display: block; }
 .pp-num { position: absolute; top: -10px; left: 8px; background: #fff; padding: 0 6px; font-family: var(--font-mincho), 'Shippori Mincho', serif; font-size: 13px; font-weight: 800; color: var(--shu); letter-spacing: .1em; }
 .pp-tag { position: absolute; top: -9px; right: 8px; background: #fff; padding: 0 5px; font-size: 9px; color: #666; letter-spacing: .1em; }
 
@@ -190,12 +214,20 @@ html, body {
 
 /* ===== Print stylesheet ===== */
 @media print {
+  /* 全要素に対して色をそのまま印刷するよう強制 */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
   body { background: #fff; }
   .sidebar, .print-controls, .app > .main > .page-head { display: none !important; }
   .app { display: block; }
   .main { padding: 0; overflow: visible; }
   .preview-wrap { background: #fff; padding: 0; display: block; min-height: auto; }
   .a4-page { width: auto; min-height: auto; box-shadow: none; padding: 0; margin: 0; }
+  body.show-answers .pp-answer-key { display: block !important; }
+  body:not(.show-answers) .pp-answer-key { display: none !important; }
   @page { size: A4; margin: 14mm 12mm; }
 }
 
