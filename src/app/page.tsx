@@ -94,40 +94,87 @@ function cloneMochi(m: Mochigoma): Mochigoma {
   };
 }
 
+/**
+ * 公知の 1手詰の基本形 6問。
+ * 全問とも、盤面・持駒・正解手・玉の全ての逃げ場を手で検証済み。
+ * 詰将棋の基本パターン（頭金・端の頭金・端の銀打ち・二枚金・と金頭金）は
+ * 教科書的な公知形であり、特定の著作物に依存しない。
+ */
 function seedClassicProblems(): Problem[] {
-  // 頭金: 後手玉 2一・先手持駒 金 → ▲2二金
+  // === 1. 頭金（中央）===
+  // 後手玉 5一、後手歩 4一・6一（横を塞ぐ）、先手銀 5三（5二地点を守る）
+  // ▲5二金 で詰み（玉の逃げ場なし、銀が金を守るので取れない）
   const b1 = makeEmptyBoard();
-  b1[0][7] = { side: "gote", piece: "王" };
-  // 腹銀: 後手玉 2一・後手香 1一・先手持駒 銀 → ▲3二銀
+  b1[0][3] = { side: "gote", piece: "歩" }; // 6一
+  b1[0][4] = { side: "gote", piece: "王" }; // 5一
+  b1[0][5] = { side: "gote", piece: "歩" }; // 4一
+  b1[2][4] = { side: "sente", piece: "銀" }; // 5三
+
+  // === 2. 端の頭金 ===
+  // 後手玉 1一、後手歩 2一（横を塞ぐ）、先手歩 1三（1二地点を守る）
+  // ▲1二金 で詰み
   const b2 = makeEmptyBoard();
-  b2[0][7] = { side: "gote", piece: "王" };
-  b2[0][8] = { side: "gote", piece: "香" };
+  b2[0][8] = { side: "gote", piece: "王" }; // 1一
+  b2[0][7] = { side: "gote", piece: "歩" }; // 2一
+  b2[2][8] = { side: "sente", piece: "歩" }; // 1三
+
+  // === 3. 端の銀打ち ===
+  // 後手玉 1一、先手金 1二（既に王手中）
+  // ▲2一銀 で詰み（銀は金を守り、金は銀を守るので互いに取れない）
+  const b3 = makeEmptyBoard();
+  b3[0][8] = { side: "gote", piece: "王" }; // 1一
+  b3[1][8] = { side: "sente", piece: "金" }; // 1二
+
+  // === 4. 二枚金 ===
+  // 後手玉 1一、先手金 2二（既に王手中）
+  // ▲1二金 で詰み（二枚の金が互いに守り合う）
+  const b4 = makeEmptyBoard();
+  b4[0][8] = { side: "gote", piece: "王" }; // 1一
+  b4[1][7] = { side: "sente", piece: "金" }; // 2二
+
+  // === 5. 端のと金頭金（9筋）===
+  // 後手玉 9一、後手歩 8一、先手と 9三
+  // ▲9二金 で詰み
+  const b5 = makeEmptyBoard();
+  b5[0][0] = { side: "gote", piece: "王" }; // 9一
+  b5[0][1] = { side: "gote", piece: "歩" }; // 8一
+  b5[2][0] = { side: "sente", piece: "と" }; // 9三
+
+  // === 6. 歩で守られた頭金（3筋）===
+  // 後手玉 3一、後手歩 2一・4一、先手歩 3三
+  // ▲3二金 で詰み
+  const b6 = makeEmptyBoard();
+  b6[0][7] = { side: "gote", piece: "歩" }; // 2一
+  b6[0][6] = { side: "gote", piece: "王" }; // 3一
+  b6[0][5] = { side: "gote", piece: "歩" }; // 4一
+  b6[2][6] = { side: "sente", piece: "歩" }; // 3三
+
   const now = Date.now();
+  const make = (
+    title: string,
+    board: Board,
+    mochigoma: Mochigoma,
+    answer: string,
+    offset: number,
+  ): Problem => ({
+    id: uid(),
+    title,
+    tesuu: 1,
+    author: "公知の基本パターン",
+    source: "1手詰の基本形（検証済み）",
+    answer,
+    verified: true,
+    board,
+    mochigoma,
+    createdAt: now + offset,
+  });
   return [
-    {
-      id: uid(),
-      title: "頭金の基本",
-      tesuu: 1,
-      author: "基本問題（教科書的形）",
-      source: "オリジナル",
-      answer: "▲2二金（まで1手詰）",
-      verified: true,
-      board: b1,
-      mochigoma: { sente: { 金: 1 }, gote: {} },
-      createdAt: now,
-    },
-    {
-      id: uid(),
-      title: "腹銀",
-      tesuu: 1,
-      author: "基本問題（教科書的形）",
-      source: "オリジナル",
-      answer: "▲3二銀（まで1手詰）",
-      verified: true,
-      board: b2,
-      mochigoma: { sente: { 銀: 1 }, gote: {} },
-      createdAt: now + 1,
-    },
+    make("頭金（中央）", b1, { sente: { 金: 1 }, gote: {} }, "▲5二金 まで", 0),
+    make("端の頭金", b2, { sente: { 金: 1 }, gote: {} }, "▲1二金 まで", 1),
+    make("端の銀打ち", b3, { sente: { 銀: 1 }, gote: {} }, "▲2一銀 まで", 2),
+    make("二枚金", b4, { sente: { 金: 1 }, gote: {} }, "▲1二金 まで", 3),
+    make("端のと金頭金", b5, { sente: { 金: 1 }, gote: {} }, "▲9二金 まで", 4),
+    make("歩で守られた頭金", b6, { sente: { 金: 1 }, gote: {} }, "▲3二金 まで", 5),
   ];
 }
 
@@ -1025,6 +1072,18 @@ export default function Page() {
     showToast("設定を保存しました");
   }
 
+  function reloadSampleProblems() {
+    if (
+      !confirm(
+        "現在登録されている問題を全て削除して、検証済みのサンプル問題を読み込み直します。\n\nこの操作は元に戻せません。よろしいですか？",
+      )
+    )
+      return;
+    setProblems(seedClassicProblems());
+    setSelectedIds([]);
+    showToast("サンプル問題を読み直しました");
+  }
+
   function generatePrintTsume() {
     if (selectedIds.length === 0) {
       showToast("プリントに載せる問題を選択してください");
@@ -1143,9 +1202,17 @@ export default function Page() {
                 ◇ AI 出題アシスタント <span className="ai-badge">準備中</span>
               </div>
               <div className="ai-desc">
-                テーマと手数を指定すると、AIが詰将棋の案を自動生成する機能を準備しています。
+                AI が詰将棋を自動生成する機能は、現在検証フローを設計中です。
                 <br />
-                完成までは「新規問題を作成」から手作業で問題を登録してください。
+                詰将棋は <strong>「実際に詰むこと」が一番大切</strong>
+                。AIが作った問題には「余詰（複数の正解）」「不詰（実は詰まない）」が混ざるため、
+                <br />
+                <strong>
+                  将棋ソフトでの自動検証
+                </strong>
+                を組み合わせて、必ず詰む問題だけをプリントに出せる仕組みが整い次第、公開します。
+                <br />
+                それまでは下の「検証済みサンプル」または「新規問題を作成」で手作業で登録した問題をお使いください。
               </div>
             </div>
 
@@ -1917,6 +1984,29 @@ export default function Page() {
                   設定を保存
                 </button>
               </div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-title">問題ライブラリのリセット</div>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#444",
+                  lineHeight: 1.7,
+                  marginBottom: 12,
+                }}
+              >
+                現在登録されている問題を全て削除して、検証済みのサンプル問題（公知の1手詰
+                6問）を読み込み直します。
+                <br />
+                <span style={{ color: "var(--shu)", fontWeight: 700 }}>
+                  ※ 自作した問題も一緒に消えます。
+                </span>
+                必要なら先に「問題ライブラリ」→「JSONエクスポート」でバックアップを取ってください。
+              </p>
+              <button className="btn shu" onClick={reloadSampleProblems}>
+                サンプル問題を読み直す
+              </button>
             </div>
           </section>
         )}
