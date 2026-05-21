@@ -1159,6 +1159,20 @@ export default function Page() {
         </div>
 
         <div className="nav-section">
+          <div className="nav-label">問題を探す</div>
+          <a
+            className="nav-item"
+            href="https://tsumeshogi.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            tsumeshogi.net ↗
+            <small>無料の詰将棋集（2000問以上）</small>
+          </a>
+        </div>
+
+        <div className="nav-section">
           <div className="nav-label">設定</div>
           <NavItem
             active={view === "settings"}
