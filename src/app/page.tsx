@@ -95,87 +95,19 @@ function cloneMochi(m: Mochigoma): Mochigoma {
 }
 
 /**
- * 公知の 1手詰の基本形 6問。
- * 全問とも、盤面・持駒・正解手・玉の全ての逃げ場を手で検証済み。
- * 詰将棋の基本パターン（頭金・端の頭金・端の銀打ち・二枚金・と金頭金）は
- * 教科書的な公知形であり、特定の著作物に依存しない。
+ * 詰将棋のサンプル問題は意図的に廃止しています。
+ *
+ * 過去に「公知のパターンを再現」として自前で作った問題を入れていましたが、
+ * 盤面・持駒の構成が実戦的でなく、検証不十分なものが含まれていました。
+ *
+ * 詰将棋は「実際に詰むこと」「余詰がないこと」が極めて重要なため、
+ * 詰将棋ソフトによる自動検証を組み込むまでは、サンプル問題は提供しません。
+ *
+ * 利用者の方は、お持ちの問題集・信頼できる出典の詰将棋を、
+ * 「新規問題を作成」または「JSON取込」から登録してご利用ください。
  */
 function seedClassicProblems(): Problem[] {
-  // === 1. 頭金（中央）===
-  // 後手玉 5一、後手歩 4一・6一（横を塞ぐ）、先手銀 5三（5二地点を守る）
-  // ▲5二金 で詰み（玉の逃げ場なし、銀が金を守るので取れない）
-  const b1 = makeEmptyBoard();
-  b1[0][3] = { side: "gote", piece: "歩" }; // 6一
-  b1[0][4] = { side: "gote", piece: "王" }; // 5一
-  b1[0][5] = { side: "gote", piece: "歩" }; // 4一
-  b1[2][4] = { side: "sente", piece: "銀" }; // 5三
-
-  // === 2. 端の頭金 ===
-  // 後手玉 1一、後手歩 2一（横を塞ぐ）、先手歩 1三（1二地点を守る）
-  // ▲1二金 で詰み
-  const b2 = makeEmptyBoard();
-  b2[0][8] = { side: "gote", piece: "王" }; // 1一
-  b2[0][7] = { side: "gote", piece: "歩" }; // 2一
-  b2[2][8] = { side: "sente", piece: "歩" }; // 1三
-
-  // === 3. 端の銀打ち ===
-  // 後手玉 1一、先手金 1二（既に王手中）
-  // ▲2一銀 で詰み（銀は金を守り、金は銀を守るので互いに取れない）
-  const b3 = makeEmptyBoard();
-  b3[0][8] = { side: "gote", piece: "王" }; // 1一
-  b3[1][8] = { side: "sente", piece: "金" }; // 1二
-
-  // === 4. 二枚金 ===
-  // 後手玉 1一、先手金 2二（既に王手中）
-  // ▲1二金 で詰み（二枚の金が互いに守り合う）
-  const b4 = makeEmptyBoard();
-  b4[0][8] = { side: "gote", piece: "王" }; // 1一
-  b4[1][7] = { side: "sente", piece: "金" }; // 2二
-
-  // === 5. 端のと金頭金（9筋）===
-  // 後手玉 9一、後手歩 8一、先手と 9三
-  // ▲9二金 で詰み
-  const b5 = makeEmptyBoard();
-  b5[0][0] = { side: "gote", piece: "王" }; // 9一
-  b5[0][1] = { side: "gote", piece: "歩" }; // 8一
-  b5[2][0] = { side: "sente", piece: "と" }; // 9三
-
-  // === 6. 歩で守られた頭金（3筋）===
-  // 後手玉 3一、後手歩 2一・4一、先手歩 3三
-  // ▲3二金 で詰み
-  const b6 = makeEmptyBoard();
-  b6[0][7] = { side: "gote", piece: "歩" }; // 2一
-  b6[0][6] = { side: "gote", piece: "王" }; // 3一
-  b6[0][5] = { side: "gote", piece: "歩" }; // 4一
-  b6[2][6] = { side: "sente", piece: "歩" }; // 3三
-
-  const now = Date.now();
-  const make = (
-    title: string,
-    board: Board,
-    mochigoma: Mochigoma,
-    answer: string,
-    offset: number,
-  ): Problem => ({
-    id: uid(),
-    title,
-    tesuu: 1,
-    author: "公知の基本パターン",
-    source: "1手詰の基本形（検証済み）",
-    answer,
-    verified: true,
-    board,
-    mochigoma,
-    createdAt: now + offset,
-  });
-  return [
-    make("頭金（中央）", b1, { sente: { 金: 1 }, gote: {} }, "▲5二金 まで", 0),
-    make("端の頭金", b2, { sente: { 金: 1 }, gote: {} }, "▲1二金 まで", 1),
-    make("端の銀打ち", b3, { sente: { 銀: 1 }, gote: {} }, "▲2一銀 まで", 2),
-    make("二枚金", b4, { sente: { 金: 1 }, gote: {} }, "▲1二金 まで", 3),
-    make("端のと金頭金", b5, { sente: { 金: 1 }, gote: {} }, "▲9二金 まで", 4),
-    make("歩で守られた頭金", b6, { sente: { 金: 1 }, gote: {} }, "▲3二金 まで", 5),
-  ];
+  return [];
 }
 
 function boardSummary(p: Problem): string {
@@ -1066,6 +998,66 @@ export default function Page() {
     showToast("JSONをダウンロードしました");
   }
 
+  function importLibrary() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) throw new Error("配列形式のJSONを期待しています");
+
+        // 簡易バリデーション
+        const valid: Problem[] = [];
+        for (const item of data) {
+          if (
+            typeof item === "object" &&
+            item &&
+            Array.isArray(item.board) &&
+            item.board.length === 9 &&
+            (item.tesuu === 1 || item.tesuu === 3 || item.tesuu === 5) &&
+            typeof item.title === "string" &&
+            typeof item.author === "string"
+          ) {
+            valid.push({
+              id: uid(),
+              title: item.title,
+              tesuu: item.tesuu,
+              author: item.author,
+              source: typeof item.source === "string" ? item.source : "",
+              answer: typeof item.answer === "string" ? item.answer : "",
+              verified: Boolean(item.verified),
+              board: item.board,
+              mochigoma: item.mochigoma || { sente: {}, gote: {} },
+              createdAt: Date.now(),
+            });
+          }
+        }
+        if (valid.length === 0) {
+          showToast("有効な問題が見つかりませんでした");
+          return;
+        }
+        if (
+          !confirm(
+            `JSONから ${valid.length} 問を読み込みます。\n\n` +
+              `「OK」で既存の問題に追加します。\n` +
+              `「キャンセル」で取り込みを中止します。`,
+          )
+        )
+          return;
+        setProblems((prev) => [...prev, ...valid]);
+        showToast(`${valid.length} 問を取り込みました`);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "不明なエラー";
+        alert("JSONの読み込みに失敗しました：\n" + msg);
+      }
+    };
+    input.click();
+  }
+
   function saveSettings() {
     const s = { school: setSchool, subtitle: setSubtitle, teacher: setTeacher };
     setSettings(s);
@@ -1075,13 +1067,13 @@ export default function Page() {
   function reloadSampleProblems() {
     if (
       !confirm(
-        "現在登録されている問題を全て削除して、検証済みのサンプル問題を読み込み直します。\n\nこの操作は元に戻せません。よろしいですか？",
+        "現在登録されている問題を全て削除します。\n\nこの操作は元に戻せません。よろしいですか？\n（必要なら先にJSONエクスポートでバックアップを取ってください）",
       )
     )
       return;
-    setProblems(seedClassicProblems());
+    setProblems([]);
     setSelectedIds([]);
-    showToast("サンプル問題を読み直しました");
+    showToast("問題を全て削除しました");
   }
 
   function generatePrintTsume() {
@@ -1199,20 +1191,21 @@ export default function Page() {
 
             <div className="ai-panel">
               <div className="ai-title">
-                ◇ AI 出題アシスタント <span className="ai-badge">準備中</span>
+                ◇ 詰将棋の登録について <span className="ai-badge">方針</span>
               </div>
               <div className="ai-desc">
-                AI が詰将棋を自動生成する機能は、現在検証フローを設計中です。
+                このアプリは <strong>「あなたが持っている詰将棋を正確に入力して印刷する」</strong> ための道具です。
                 <br />
-                詰将棋は <strong>「実際に詰むこと」が一番大切</strong>
-                。AIが作った問題には「余詰（複数の正解）」「不詰（実は詰まない）」が混ざるため、
                 <br />
-                <strong>
-                  将棋ソフトでの自動検証
-                </strong>
-                を組み合わせて、必ず詰む問題だけをプリントに出せる仕組みが整い次第、公開します。
+                AIが詰将棋を自動生成する機能や、自前のサンプル問題は、<strong>「実際に詰むことの保証ができない」</strong>
+                ため意図的に提供していません（余詰・不詰のリスクがあるため）。
                 <br />
-                それまでは下の「検証済みサンプル」または「新規問題を作成」で手作業で登録した問題をお使いください。
+                <br />
+                登録方法は次の2つです：
+                <br />
+                ・<strong>新規問題を作成</strong>：本やアプリで見つけた問題を、盤面エディタで自分で並べる
+                <br />
+                ・<strong>JSON取込</strong>（問題ライブラリ画面）：このアプリでエクスポートしたJSONを取り込む
               </div>
             </div>
 
@@ -1288,13 +1281,28 @@ export default function Page() {
                 {filtered.length === 0 ? (
                   <div className="empty-state">
                     <div className="mark">無</div>
-                    <div className="msg">該当する問題がありません</div>
-                    <button
-                      className="btn primary"
-                      onClick={() => setView("editor")}
-                    >
-                      + 新規問題を作成
-                    </button>
+                    <div className="msg">
+                      該当する問題がありません
+                      <br />
+                      <span style={{ fontSize: 11, color: "#999" }}>
+                        お持ちの問題集の詰将棋を、エディタで登録するか
+                        JSON で取り込んでください。
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                      <button
+                        className="btn"
+                        onClick={importLibrary}
+                      >
+                        JSON取込
+                      </button>
+                      <button
+                        className="btn primary"
+                        onClick={() => setView("editor")}
+                      >
+                        + 新規問題を作成
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   filtered.map((p) => {
@@ -1652,6 +1660,9 @@ export default function Page() {
                 <div className="page-sub">PROBLEM LIBRARY</div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn" onClick={importLibrary}>
+                  JSON取込
+                </button>
                 <button className="btn" onClick={exportLibrary}>
                   JSONエクスポート
                 </button>
@@ -1681,13 +1692,28 @@ export default function Page() {
               {problems.length === 0 ? (
                 <div className="empty-state">
                   <div className="mark">蔵</div>
-                  <div className="msg">まだ問題が登録されていません</div>
-                  <button
-                    className="btn primary"
-                    onClick={() => setView("editor")}
-                  >
-                    + 最初の問題を作る
-                  </button>
+                  <div className="msg">
+                    まだ問題が登録されていません
+                    <br />
+                    <span style={{ fontSize: 11, color: "#999" }}>
+                      お持ちの問題集の詰将棋を「新規問題を作成」で登録するか、
+                      JSON形式の問題集ファイルを「JSON取込」から読み込んでください。
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                    <button
+                      className="btn"
+                      onClick={importLibrary}
+                    >
+                      JSON取込
+                    </button>
+                    <button
+                      className="btn primary"
+                      onClick={() => setView("editor")}
+                    >
+                      + 最初の問題を作る
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -1987,7 +2013,7 @@ export default function Page() {
             </div>
 
             <div className="panel">
-              <div className="panel-title">問題ライブラリのリセット</div>
+              <div className="panel-title">問題ライブラリを空にする</div>
               <p
                 style={{
                   fontSize: 13,
@@ -1996,16 +2022,19 @@ export default function Page() {
                   marginBottom: 12,
                 }}
               >
-                現在登録されている問題を全て削除して、検証済みのサンプル問題（公知の1手詰
-                6問）を読み込み直します。
+                ブラウザに保存されている問題を全て削除します。
                 <br />
                 <span style={{ color: "var(--shu)", fontWeight: 700 }}>
-                  ※ 自作した問題も一緒に消えます。
+                  ※ 元に戻せません。
                 </span>
                 必要なら先に「問題ライブラリ」→「JSONエクスポート」でバックアップを取ってください。
+                <br />
+                <span style={{ fontSize: 12, color: "#666" }}>
+                  ※ 以前に内蔵していた「サンプル問題」は、検証不十分だったため廃止しました。新しい問題は「JSON取込」または「新規問題を作成」から登録してください。
+                </span>
               </p>
               <button className="btn shu" onClick={reloadSampleProblems}>
-                サンプル問題を読み直す
+                全ての問題を削除する
               </button>
             </div>
           </section>
